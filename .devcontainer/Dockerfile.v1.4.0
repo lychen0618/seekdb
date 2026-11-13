@@ -1,0 +1,26 @@
+FROM ubuntu:20.04
+
+ENV TERM=xterm-256color
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -yq && \
+    apt-get install -yq locales git wget curl rpm rpm2cpio cpio make build-essential binutils libtinfo5 libtool-bin libaio1 libaio-dev m4 file python3 && \
+    printf 'en_US.UTF-8 UTF-8\n' > /etc/locale.gen && \
+    locale-gen && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV LANGUAGE=en_US
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
+# The repository pins Rust 1.97.1, clippy, and both GNU targets.
+ENV PATH=/root/.cargo/bin:${PATH}
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none && \
+    rustup toolchain install 1.97.1 --component clippy \
+      --target x86_64-unknown-linux-gnu --target x86_64-pc-windows-gnu
+
+# An empty named volume mounted at deps/3rd receives these files on first use.
+WORKDIR /workspace/seekdb
+COPY build.sh ./
+COPY deps/init/ deps/init/
+RUN bash build.sh init

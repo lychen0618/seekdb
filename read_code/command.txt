@@ -1,0 +1,33 @@
+编译：
+./build.sh release \
+  '-DDEBUG_PREFIX=' \
+  '-DFILE_PREFIX=' \
+  '-DCMAKE_C_FLAGS_RELWITHDEBINFO=-O0 -g -DNDEBUG' \
+  '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO=-O0 -g -DNDEBUG' \
+  --make -j4
+
+启动实例：
+
+mkdir -p /tmp/seekdb-debug
+./build_release/src/observer/seekdb \
+  --nodaemon \
+  --base-dir=/tmp/seekdb-debug \
+  --port=10000
+
+连接：
+
+./deps/3rd/u01/obclient/bin/obclient \
+  -h127.0.0.1 -P10000 -uroot -Doceanbase -A
+
+| 参数 | 含义 |
+|---|---|
+| -h127.0.0.1 | 连接容器内的本机地址。 |
+| -P10000 | 使用 10000 端口；以 single.yaml 中的 mysql_port 为准。 |
+| -uroot | 使用 root 用户。 |
+| -Doceanbase | 连接后默认进入 oceanbase 数据库。 |
+| -A | 连接时不预先读取表结构，用于加快进入客户端的速度。 |
+
+
+./deps/3rd/u01/obclient/bin/obclient \
+  -h127.0.0.1 -P10000 -uroot -Doceanbase -A \
+  -e 'SELECT 1;'
